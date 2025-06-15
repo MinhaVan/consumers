@@ -10,6 +10,7 @@ using Consumer.Domain.Interfaces.Applications;
 using Consumer.Application.Applications;
 using Consumer.Domain.Interfaces.Repositories;
 using Consumer.Repository.APIs;
+using System.Text.Json;
 
 internal class Program
 {
@@ -29,8 +30,14 @@ internal class Program
             .ConfigureServices((context, services) =>
             {
                 // Bind settings
-                services.Configure<RabbitMqSettings>(context.Configuration.GetSection("RabbitMQ"));
-                services.Configure<RoutesApiSettings>(context.Configuration.GetSection("RoutesApi"));
+                var rabbitMqSettings = context.Configuration.GetSection("RabbitMQ");
+                services.Configure<RabbitMqSettings>(rabbitMqSettings);
+
+                var routesApiSettings = context.Configuration.GetSection("RoutesApi");
+                services.Configure<RoutesApiSettings>(routesApiSettings);
+
+                Console.WriteLine($"Configurações do RabbitMQ: {JsonSerializer.Serialize(rabbitMqSettings.Get<RabbitMqSettings>())}");
+                Console.WriteLine($"Configurações da API de Rotas: {JsonSerializer.Serialize(routesApiSettings.Get<RoutesApiSettings>())}");
 
                 services.AddHostedService<QueueConsumer>();
                 services.AddSingleton<IValidator<EnviarLocalizacaoWebSocketRequest>, EnviarLocalizacaoWebSocketRequestValidator>();
