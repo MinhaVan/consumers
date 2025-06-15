@@ -13,7 +13,7 @@ COPY ["Consumers.sln", "."]
 COPY ["App/Consumers.Localizacao/Consumers.Localizacao.csproj", "App/Consumers.Localizacao/"]
 COPY ["Consumers.Domain/Consumers.Domain.csproj", "Consumers.Domain/"]
 COPY ["Consumers.Application/Consumers.Application.csproj", "Consumers.Application/"]
-COPY ["Consumers.Data/Consumers.Data.csproj", "Consumers.Data/"]
+COPY ["Consumers.Repository/Consumers.Repository.csproj", "Consumers.Repository/"]
 
 # Restaura as dependências
 RUN dotnet restore "Consumers.sln"
