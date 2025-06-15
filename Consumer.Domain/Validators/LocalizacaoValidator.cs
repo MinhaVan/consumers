@@ -7,8 +7,13 @@ public class EnviarLocalizacaoWebSocketRequestValidator : AbstractValidator<Envi
 {
     public EnviarLocalizacaoWebSocketRequestValidator()
     {
-        RuleFor(x => x.Latitude).NotEmpty();
-        RuleFor(x => x.Longitude).NotEmpty();
         RuleFor(x => x.RotaId).NotEmpty();
+        RuleFor(x => x.Latitude)
+            .NotEmpty()
+            .When(x => x.TipoMensagem != "finalizar_corrida");
+
+        RuleFor(x => x.Longitude)
+            .NotEmpty()
+            .When(x => x.TipoMensagem != "finalizar_corrida");
     }
 }
