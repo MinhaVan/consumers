@@ -21,7 +21,7 @@ public class LocalizacaoApplication(
         if (request.Retry >= rabbitMqSettings.Value.MaxRetries)
         {
             _logger.LogError("Número máximo de tentativas atingido para a mensagem: {Mensagem}", request.Mensagem);
-            return new BaseQueue<EnviarLocalizacaoWebSocketRequest>(request.Mensagem, request.Retry + 1)
+            return new BaseQueue<EnviarLocalizacaoWebSocketRequest>(request.Mensagem, rabbitMqSettings.Value.MaxRetries)
             {
                 Erros = new List<string> { "Número máximo de tentativas atingido." }
             };
@@ -31,10 +31,10 @@ public class LocalizacaoApplication(
         if (!validation.IsValid)
         {
             _logger.LogError("Validação falhou para a mensagem: {Mensagem}. Erros: {Erros}", request.Mensagem, validation.Errors);
-            return new BaseQueue<EnviarLocalizacaoWebSocketRequest>(request.Mensagem, request.Retry + 1)
-            {
-                Erros = validation.Errors.Select(e => e.ErrorMessage).ToList()
-            };
+
+            request.Retry = request.Retry + 1;
+            request.Erros = validation.Errors.Select(e => e.ErrorMessage).ToList();
+            return request;
         }
 
         var enviarLocalizacaoWebSocketModelRequest = new EnviarLocalizacaoWebSocketModelRequest(request.Mensagem);
@@ -43,12 +43,13 @@ public class LocalizacaoApplication(
         if (saveLocalizacaoResponse.Sucesso is false)
         {
             _logger.LogError("Erro ao salvar localização: {Mensagem}. Erros: {Erros}", request.Mensagem, saveLocalizacaoResponse.Erros);
-            return new BaseQueue<EnviarLocalizacaoWebSocketRequest>(request.Mensagem, request.Retry + 1)
-            {
-                Erros = saveLocalizacaoResponse.Erros.Select(e => e).ToList()
-            };
+
+            request.Retry = request.Retry + 1;
+            request.Erros = saveLocalizacaoResponse.Erros.Select(e => e).ToList();
+            return request;
         }
 
-        return new BaseQueue<EnviarLocalizacaoWebSocketRequest>(request.Mensagem, request.Retry);
+        request.Erros = new();
+        return request;
     }
 }
