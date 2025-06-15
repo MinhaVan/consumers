@@ -100,19 +100,39 @@ public class QueueConsumer : BackgroundService
 
     private void RetryMessage(BasicDeliverEventArgs ea)
     {
-        // Primeiro faz o ACK da mensagem atual
         _channel.BasicAck(ea.DeliveryTag, false);
 
-        // Cria nova mensagem e envia para a fila de retry
+        int retryCount = 0;
+
+        if (ea.BasicProperties.Headers != null &&
+            ea.BasicProperties.Headers.TryGetValue("x-retry-count", out var value))
+        {
+            var stringValue = Encoding.UTF8.GetString((byte[])value);
+            if (!int.TryParse(stringValue, out retryCount))
+            {
+                retryCount = 0;
+            }
+        }
+
         var props = _channel.CreateBasicProperties();
         props.Persistent = true;
+        props.Headers = new Dictionary<string, object>
+        {
+            { "x-retry-count", (retryCount + 1).ToString() }
+        };
 
-        _channel.BasicPublish(
-            exchange: "",
-            routingKey: RetryQueueName,
-            basicProperties: props,
-            body: ea.Body);
+        if (retryCount >= _settings.MaxRetries)
+        {
+            _logger.LogWarning("Mensagem excedeu tentativas. Enviando para a fila morta.");
+            _channel.BasicPublish("", DeadQueueName, props, ea.Body);
+        }
+        else
+        {
+            _logger.LogInformation($"Reenviando mensagem para retry. Tentativa: {retryCount + 1}");
+            _channel.BasicPublish("", RetryQueueName, props, ea.Body);
+        }
     }
+
 
     public override void Dispose()
     {
