@@ -32,4 +32,4 @@ RUN dotnet publish -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "App/Consumer.Localizacao.dll"]
+ENTRYPOINT ["dotnet", "Consumer.Localizacao.dll"]
