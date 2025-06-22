@@ -33,7 +33,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: ./Dockerfile.email
+          file: ./Dockerfile.Email
           push: true
           tags: ${{ env.IMAGE_NAME }}
 
@@ -104,7 +104,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: ./Dockerfile.email
+          file: ./Dockerfile.Localizacao
           push: true
           tags: ${{ env.IMAGE_NAME }}
 
