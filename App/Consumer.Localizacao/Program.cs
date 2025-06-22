@@ -52,11 +52,10 @@ internal class Program
                         RabbitMqQueues.EnviarLocalizacao
                     ));
 
-                var routesApi = context.Configuration.GetSection("RoutesApi").Get<RoutesApiSettings>();
                 services.AddHttpClient("routes-api", client =>
                 {
-                    client.BaseAddress = new Uri(routesApi.BaseUrl);
-                    client.DefaultRequestHeaders.Add(routesApi.ApiKeyHeader, routesApi.ApiKeyValue);
+                    client.BaseAddress = new Uri(generalSetting.RoutesApi.BaseUrl);
+                    client.DefaultRequestHeaders.Add(generalSetting.RoutesApi.ApiKeyHeader, generalSetting.RoutesApi.ApiKeyValue);
                 });
             })
             .Build();
