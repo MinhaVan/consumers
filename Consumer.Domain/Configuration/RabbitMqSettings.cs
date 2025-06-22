@@ -1,4 +1,4 @@
-namespace Consumer.Domain.Utils;
+namespace Consumer.Domain.Configuration;
 
 public class RabbitMqSettings
 {

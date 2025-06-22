@@ -1,24 +1,36 @@
 {
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
   "configurations": [
     {
-      "name": ".NET Core Launch (console)",
+      "name": "Localizacao Consumer",
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build",
       "program": "${workspaceFolder}/App/Consumer.Localizacao/bin/Debug/net9.0/Consumer.Localizacao.dll",
       "args": [],
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "local"
+      },
       "cwd": "${workspaceFolder}/App/Consumer.Localizacao",
       "console": "internalConsole",
-      "stopAtEntry": false,
-      "env": {
-        "DOTNET_ENVIRONMENT": "Local"
-      }
+      "stopAtEntry": false
     },
     {
-      "name": ".NET Core Attach",
+      "name": "Email Consumer",
       "type": "coreclr",
-      "request": "attach"
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/App/Consumer.Email/bin/Debug/net9.0/Consumer.Email.dll",
+      "args": [],
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "local"
+      },
+      "cwd": "${workspaceFolder}/App/Consumer.Email",
+      "console": "internalConsole",
+      "stopAtEntry": false
     }
   ]
 }

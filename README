@@ -1,0 +1,3 @@
+dotnet ef migrations add Initial --project ../../Consumer.Repository --startup-project .
+
+dotnet ef database update

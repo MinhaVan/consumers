@@ -7,20 +7,21 @@ using Consumer.Domain.ViewModels.Localizacao;
 using Consumer.Domain.Utils;
 using Consumer.Domain.Interfaces.Applications;
 using Consumer.Application.Applications;
-using Consumer.Domain.Interfaces.Repositories;
-using Consumer.Repository.APIs;
 using System.Text.Json;
 using Consumer.Application.Queues;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.EntityFrameworkCore;
+using Consumer.Repository.Context;
 using Consumer.Domain.Configuration;
+using Consumer.Repository.Repository;
+using Consumer.Domain.Interfaces.Repositories;
 
 internal class Program
 {
     public static async Task Main(string[] args)
     {
         var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-
         var host = Host.CreateDefaultBuilder(args)
             .ConfigureAppConfiguration((context, config) =>
             {
@@ -39,25 +40,22 @@ internal class Program
 
                 services.AddSingleton(generalSetting);
 
-                services.AddSingleton<IValidator<EnviarLocalizacaoWebSocketRequest>, EnviarLocalizacaoWebSocketRequestValidator>();
-                services.AddSingleton<ILocalizacaoApplication, LocalizacaoApplication>();
-                services.AddSingleton<ILocalizacaoRepository, LocalizacaoRepository>();
+                var connection = context.Configuration.GetConnectionString("DefaultConnection");
+                services.AddDbContext<EmailContext>(options =>
+                    options.UseNpgsql(connection, b => b.MigrationsAssembly("Consumer.Email")));
 
-                services.AddSingleton<IQueueMessageHandler<EnviarLocalizacaoWebSocketRequest>, LocalizacaoQueueHandler>();
+                services.AddScoped<IValidator<EmailRequest>, EmailRequestValidator>();
+                services.AddScoped<IEmailApplication, EmailApplication>();
+                services.AddScoped<IEmailRepository, EmailRepository>();
+
+                services.AddSingleton<IQueueMessageHandler<EmailRequest>, EmailQueueHandler>();
                 services.AddHostedService(sp =>
-                    new GenericQueueConsumer<EnviarLocalizacaoWebSocketRequest>(
-                        sp.GetRequiredService<ILogger<GenericQueueConsumer<EnviarLocalizacaoWebSocketRequest>>>(),
+                    new GenericQueueConsumer<EmailRequest>(
+                        sp.GetRequiredService<ILogger<GenericQueueConsumer<EmailRequest>>>(),
                         sp.GetRequiredService<GeneralSetting>(),
-                        sp.GetRequiredService<IQueueMessageHandler<EnviarLocalizacaoWebSocketRequest>>(),
-                        RabbitMqQueues.EnviarLocalizacao
+                        sp.GetRequiredService<IQueueMessageHandler<EmailRequest>>(),
+                        RabbitMqQueues.Email
                     ));
-
-                var routesApi = context.Configuration.GetSection("RoutesApi").Get<RoutesApiSettings>();
-                services.AddHttpClient("routes-api", client =>
-                {
-                    client.BaseAddress = new Uri(routesApi.BaseUrl);
-                    client.DefaultRequestHeaders.Add(routesApi.ApiKeyHeader, routesApi.ApiKeyValue);
-                });
             })
             .Build();
 

@@ -7,19 +7,17 @@ on:
       - main
 
 jobs:
-  deploy-dev:
+  deploy-email:
     if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main'
     concurrency:
-      group: ${{ github.repository }}-deploy-dev
+      group: ${{ github.repository }}-deploy-email
       cancel-in-progress: false
     runs-on: ubuntu-latest
 
     steps:
       - name: Set lowercase OWNER and image name
-        id: vars
         run: |
-          echo "OWNER=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
-          echo "IMAGE_NAME=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/consumers-dev:latest" >> $GITHUB_ENV
+          echo "IMAGE_NAME=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/email-consumer-dev:latest" >> $GITHUB_ENV
 
       - name: Checkout code
         uses: actions/checkout@v4
@@ -31,13 +29,15 @@ jobs:
           username: zWalterli
           password: ${{ secrets.GIT_PAT }}
 
-      - name: Build and push Docker image
+      - name: Build and push Docker image for Consumer.Email
         uses: docker/build-push-action@v4
         with:
+          context: .
+          file: ./Dockerfile.email
           push: true
           tags: ${{ env.IMAGE_NAME }}
 
-      - name: SSH Deploy DEV
+      - name: SSH Deploy Consumer.Email
         uses: appleboy/ssh-action@v0.1.10
         with:
           host: ${{ secrets.VPS_DEV_HOST }}
@@ -63,8 +63,8 @@ jobs:
 
             echo "📦 Parando container antigo"
             cd ./APIs
-            docker compose stop consumers-dev || true
-            docker compose rm -f consumers-dev || true
+            docker compose stop email-consumer-dev || true
+            docker compose rm -f email-consumer-dev || true
 
             echo "📥 Removendo imagem antiga localmente"
             docker rmi "$IMAGE_NAME" || true
@@ -75,6 +75,77 @@ jobs:
             docker pull "$IMAGE_NAME"
 
             echo "🚀 Subindo container com nova imagem"
-            docker compose up -d consumers-dev
+            docker compose up -d email-consumer-dev
+          debug: true
+
+  deploy-localizacao:
+    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main'
+    concurrency:
+      group: ${{ github.repository }}-deploy-email
+      cancel-in-progress: false
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set lowercase OWNER and image name
+        run: |
+          echo "IMAGE_NAME=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/localizacao-consumer-dev:latest" >> $GITHUB_ENV
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: zWalterli
+          password: ${{ secrets.GIT_PAT }}
+
+      - name: Build and push Docker image for Consumer.Localizacao
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./Dockerfile.email
+          push: true
+          tags: ${{ env.IMAGE_NAME }}
+
+      - name: SSH Deploy Consumer.Localizacao
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.VPS_DEV_HOST }}
+          username: ${{ secrets.VPS_DEV_USER }}
+          key: ${{ secrets.VPS_DEV_SSH_KEY }}
+          script: |
+            set -xe
+
+            export GITHUB_USER="zWalterli"
+            export GIT_PAT="${{ secrets.GIT_PAT }}"
+            export IMAGE_NAME="${{ env.IMAGE_NAME }}"
+
+            echo "DEBUG: GITHUB_USER='$GITHUB_USER'"
+            echo "DEBUG: GIT_PAT length='${#GIT_PAT}'"
+            echo "DEBUG: IMAGE_NAME='$IMAGE_NAME'"
+
+            echo "🚀 Atualizando código"
+            cd ~/deploy/dev/infra
+            git remote set-url origin https://github.com/MinhaVan/infra.git
+            git fetch origin
+            git checkout develop
+            git reset --hard origin/develop
+
+            echo "📦 Parando container antigo"
+            cd ./APIs
+            docker compose stop localizacao-consumer-dev || true
+            docker compose rm -f localizacao-consumer-dev || true
+
+            echo "📥 Removendo imagem antiga localmente"
+            docker rmi "$IMAGE_NAME" || true
+
+            echo "$GIT_PAT" | docker login ghcr.io -u "$GITHUB_USER" --password-stdin
+
+            echo "📥 Puxando nova imagem do registry"
+            docker pull "$IMAGE_NAME"
+
+            echo "🚀 Subindo container com nova imagem"
+            docker compose up -d localizacao-consumer-dev
 
           debug: true
