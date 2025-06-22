@@ -19,16 +19,16 @@
       "stopAtEntry": false
     },
     {
-      "name": "Email Consumer",
+      "name": "Notificacao Consumer",
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build",
-      "program": "${workspaceFolder}/App/Consumer.Email/bin/Debug/net9.0/Consumer.Email.dll",
+      "program": "${workspaceFolder}/App/Consumer.Notificacao/bin/Debug/net9.0/Consumer.Notificacao.dll",
       "args": [],
       "env": {
         "ASPNETCORE_ENVIRONMENT": "local"
       },
-      "cwd": "${workspaceFolder}/App/Consumer.Email",
+      "cwd": "${workspaceFolder}/App/Consumer.Notificacao",
       "console": "internalConsole",
       "stopAtEntry": false
     }

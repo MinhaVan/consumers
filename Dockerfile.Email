@@ -19,7 +19,7 @@ RUN dotnet restore "Consumers.sln"
 
 COPY . .
 
-WORKDIR "/src/App/Consumer.Email"
+WORKDIR "/src/App/Consumer.Notificacao"
 RUN dotnet build -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
@@ -28,4 +28,4 @@ RUN dotnet publish -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "Consumer.Email.dll"]
+ENTRYPOINT ["dotnet", "Consumer.Notificacao.dll"]

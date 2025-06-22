@@ -2,40 +2,34 @@ using System.Net;
 using System.Text.Json;
 using Consumer.Application.Extensions;
 using Consumer.Domain.Configuration;
+using Consumer.Domain.Enum;
 using Consumer.Domain.Interfaces.Applications;
 using Consumer.Domain.Interfaces.Repositories;
 using Consumer.Domain.Models;
-using Consumer.Domain.Utils;
 using Consumer.Domain.ViewModels;
 using Consumer.Domain.ViewModels.Localizacao;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Polly;
 using SendGrid;
 using SendGrid.Helpers.Mail;
 
 namespace Consumer.Application.Applications;
 
-public class EmailApplication(
-    ILogger<EmailApplication> _logger,
-    IValidator<EmailRequest> _validator,
+public class NotificacaoApplication(
+    ILogger<NotificacaoApplication> _logger,
+    IValidator<NotificacaoRequest> _validator,
     GeneralSetting generalSetting,
-    IEmailRepository _emailRepository
-) : IEmailApplication
+    INotificacaoRepository _notificacaoRepository,
+    IWhatsappRepository _whatsappRepository
+) : INotificacaoApplication
 {
-    public async Task<QueueResponse<EmailRequest>> ExecuteAsync(BaseQueue<EmailRequest> request)
+    public async Task<QueueResponse<NotificacaoRequest>> ExecuteAsync(BaseQueue<NotificacaoRequest> request)
     {
         if (request is null || request.Mensagem is null)
         {
             _logger.LogError("Request ou Mensagem nula recebida.");
             return default!;
-        }
-
-        if (request.Retry >= generalSetting.RabbitMq.MaxRetries)
-        {
-            _logger.LogError("Máximo de tentativas atingido: {Mensagem}", JsonSerializer.Serialize(request.Mensagem));
-            return request.CreateResponse("Número máximo de tentativas atingido.");
         }
 
         var validation = await _validator.ValidateAsync(request.Mensagem);
@@ -51,8 +45,21 @@ public class EmailApplication(
 
         try
         {
-            var template = await _emailRepository.GetEmailTemplateByIdAsync(request.Mensagem.TipoEmail);
-            await SendEmailAsync(request.Mensagem.Destinos, template.Assunto, GerarHtmlEmail(template.Corpo, request.Mensagem.Data));
+            var template = await _notificacaoRepository.GetNotificacaoTemplateAsync(request.Mensagem.TipoNotificacao);
+
+            switch (request.Mensagem.TipoContatoNotificacao)
+            {
+                case TipoContatoNotificacaoEnum.Email:
+                    await SendEmailAsync(request.Mensagem.Destinos, template.Assunto, PreencherCorpoMensagem(template.Corpo, request.Mensagem.Data));
+                    break;
+
+                case TipoContatoNotificacaoEnum.Whatsapp:
+                    await SendWhatsappAsync(request.Mensagem.Destinos, titulo: string.Empty, PreencherCorpoMensagem(template.Corpo, request.Mensagem.Data));
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(request.Mensagem.TipoContatoNotificacao), "Tipo de contato não suportado");
+            }
 
             request.Erros = new();
             return request.CreateResponse();
@@ -69,7 +76,7 @@ public class EmailApplication(
         }
     }
 
-    private string GerarHtmlEmail(string corpo, string data)
+    private string PreencherCorpoMensagem(string corpo, string data)
     {
         if (string.IsNullOrWhiteSpace(corpo) || string.IsNullOrWhiteSpace(data))
             return corpo;
@@ -86,6 +93,21 @@ public class EmailApplication(
 
 
         return corpo;
+    }
+
+
+    private async Task SendWhatsappAsync(List<string> destinos, string titulo, string mensagemHtml)
+    {
+        await Task.WhenAll(
+            destinos.Select(async destino =>
+            {
+                await _whatsappRepository.SendWhatsappAsync(new MensagemWhatsapp
+                {
+                    Message = mensagemHtml,
+                    Number = destino
+                });
+            })
+        );
     }
 
     private async Task SendEmailAsync(List<string> destinos, string titulo, string mensagemHtml)

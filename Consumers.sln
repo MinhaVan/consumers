@@ -13,7 +13,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Consumer.Domain", "Consumer
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Consumer.Repository", "Consumer.Repository\Consumer.Repository.csproj", "{6D4B3978-DAC0-4022-BE92-7305C7978A77}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Consumer.Email", "App\Consumer.Email\Consumer.Email.csproj", "{D7240FF5-BDAC-4D17-B7B6-9D327EFE5B50}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Consumer.Notificacao", "App\Consumer.Notificacao\Consumer.Notificacao.csproj", "{D7240FF5-BDAC-4D17-B7B6-9D327EFE5B50}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

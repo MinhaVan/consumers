@@ -39,11 +39,11 @@ internal class Program
 
                 services.AddSingleton(generalSetting);
 
-                services.AddSingleton<IValidator<EnviarLocalizacaoWebSocketRequest>, EnviarLocalizacaoWebSocketRequestValidator>();
-                services.AddSingleton<ILocalizacaoApplication, LocalizacaoApplication>();
-                services.AddSingleton<ILocalizacaoRepository, LocalizacaoRepository>();
+                services.AddScoped<IValidator<EnviarLocalizacaoWebSocketRequest>, EnviarLocalizacaoWebSocketRequestValidator>();
+                services.AddScoped<ILocalizacaoApplication, LocalizacaoApplication>();
+                services.AddScoped<ILocalizacaoRepository, LocalizacaoRepository>();
 
-                services.AddSingleton<IQueueMessageHandler<EnviarLocalizacaoWebSocketRequest>, LocalizacaoQueueHandler>();
+                services.AddScoped<IQueueMessageHandler<EnviarLocalizacaoWebSocketRequest>, LocalizacaoQueueHandler>();
                 services.AddHostedService(sp =>
                     new GenericQueueConsumer<EnviarLocalizacaoWebSocketRequest>(
                         sp.GetRequiredService<ILogger<GenericQueueConsumer<EnviarLocalizacaoWebSocketRequest>>>(),
@@ -56,6 +56,17 @@ internal class Program
                 {
                     client.BaseAddress = new Uri(generalSetting.RoutesApi.BaseUrl);
                     client.DefaultRequestHeaders.Add(generalSetting.RoutesApi.ApiKeyHeader, generalSetting.RoutesApi.ApiKeyValue);
+                });
+
+                services.AddHttpClient("auth-api", client =>
+                {
+                    client.BaseAddress = new Uri(generalSetting.AuthAPI.BaseUrl);
+                    client.DefaultRequestHeaders.Add(generalSetting.AuthAPI.ApiKeyHeader, generalSetting.AuthAPI.ApiKeyValue);
+                });
+
+                services.AddHttpClient("whatsapp-api", client =>
+                {
+                    client.BaseAddress = new Uri(generalSetting.WhatsappAPI.BaseUrl);
                 });
             })
             .Build();

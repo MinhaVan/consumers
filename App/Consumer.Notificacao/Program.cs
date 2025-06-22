@@ -16,6 +16,7 @@ using Consumer.Repository.Context;
 using Consumer.Domain.Configuration;
 using Consumer.Repository.Repository;
 using Consumer.Domain.Interfaces.Repositories;
+using Consumer.Repository.APIs;
 
 internal class Program
 {
@@ -41,20 +42,22 @@ internal class Program
                 services.AddSingleton(generalSetting);
 
                 var connection = context.Configuration.GetConnectionString("DefaultConnection");
-                services.AddDbContext<EmailContext>(options =>
-                    options.UseNpgsql(connection, b => b.MigrationsAssembly("Consumer.Email")));
+                services.AddDbContext<NotificacaoContext>(options =>
+                    options.UseNpgsql(connection, b => b.MigrationsAssembly("Consumer.Notificacao")));
 
-                services.AddScoped<IValidator<EmailRequest>, EmailRequestValidator>();
-                services.AddScoped<IEmailApplication, EmailApplication>();
-                services.AddScoped<IEmailRepository, EmailRepository>();
+                services.AddScoped<IValidator<NotificacaoRequest>, NotificacaoRequestValidator>();
+                services.AddScoped<INotificacaoApplication, NotificacaoApplication>();
+                services.AddScoped<INotificacaoRepository, NotificacaoRepository>();
+                services.AddScoped<IWhatsappRepository, WhatsappRepository>();
+                services.AddScoped<IAuthRepository, AuthRepository>();
 
-                services.AddSingleton<IQueueMessageHandler<EmailRequest>, EmailQueueHandler>();
+                services.AddSingleton<IQueueMessageHandler<NotificacaoRequest>, NotificacaoQueueHandler>();
                 services.AddHostedService(sp =>
-                    new GenericQueueConsumer<EmailRequest>(
-                        sp.GetRequiredService<ILogger<GenericQueueConsumer<EmailRequest>>>(),
+                    new GenericQueueConsumer<NotificacaoRequest>(
+                        sp.GetRequiredService<ILogger<GenericQueueConsumer<NotificacaoRequest>>>(),
                         sp.GetRequiredService<GeneralSetting>(),
-                        sp.GetRequiredService<IQueueMessageHandler<EmailRequest>>(),
-                        RabbitMqQueues.Email
+                        sp.GetRequiredService<IQueueMessageHandler<NotificacaoRequest>>(),
+                        RabbitMqQueues.Notificacao
                     ));
             })
             .Build();

@@ -8,9 +8,14 @@ public class RabbitMqSettings
     public string Password { get; set; }
     public int MaxRetries { get; set; }
 }
-public class RoutesApiSettings
+
+public class ApiWithKeySettings : ApiSettings
 {
-    public string BaseUrl { get; set; }
     public string ApiKeyHeader { get; set; }
     public string ApiKeyValue { get; set; }
+}
+
+public class ApiSettings
+{
+    public string BaseUrl { get; set; }
 }

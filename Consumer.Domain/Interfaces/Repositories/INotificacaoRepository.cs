@@ -3,7 +3,7 @@ using Consumer.Domain.Models;
 
 namespace Consumer.Domain.Interfaces.Repositories;
 
-public interface IEmailRepository
+public interface INotificacaoRepository
 {
-    Task<EmailTemplate> GetEmailTemplateByIdAsync(TipoEmailEnum id);
+    Task<Template> GetNotificacaoTemplateAsync(TipoNotificacaoEnum id);
 }

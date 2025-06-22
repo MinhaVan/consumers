@@ -2,16 +2,16 @@ using Consumer.Domain.Enum;
 
 namespace Consumer.Domain.Models;
 
-public class EmailTemplate
+public class Template
 {
     public int Id { get; set; }
-    public TipoEmailEnum TipoEmail { get; set; }
+    public TipoNotificacaoEnum TipoNotificacao { get; set; }
     public string Nome { get; set; } = string.Empty;
-    public string Descricao { get; set; } = string.Empty;
+    public string? Descricao { get; set; } = string.Empty;
     public string Assunto { get; set; } = string.Empty;
     public string Corpo { get; set; } = string.Empty;
-    public List<string> Copias { get; set; } = new();
-    public List<string> CopiasOcultas { get; set; } = new();
+    public string? Copias { get; set; } = string.Empty;
+    public string? CopiasOcultas { get; set; } = string.Empty;
     public string? Anexos { get; set; }
     public DateTime DataCriacao { get; set; } = DateTime.UtcNow;
     public DateTime? DataAtualizacao { get; set; }

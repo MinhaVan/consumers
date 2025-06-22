@@ -7,17 +7,17 @@ on:
       - main
 
 jobs:
-  deploy-email:
+  deploy-notificacao:
     if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main'
     concurrency:
-      group: ${{ github.repository }}-deploy-email
+      group: ${{ github.repository }}-deploy-consumer
       cancel-in-progress: false
     runs-on: ubuntu-latest
 
     steps:
       - name: Set lowercase OWNER and image name
         run: |
-          echo "IMAGE_NAME=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/email-consumer-dev:latest" >> $GITHUB_ENV
+          echo "IMAGE_NAME=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/notificacao-consumer-dev:latest" >> $GITHUB_ENV
 
       - name: Checkout code
         uses: actions/checkout@v4
@@ -29,15 +29,15 @@ jobs:
           username: zWalterli
           password: ${{ secrets.GIT_PAT }}
 
-      - name: Build and push Docker image for Consumer.Email
+      - name: Build and push Docker image for Consumer.Notificacao
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: ./Dockerfile.Email
+          file: ./Dockerfile.Notificacao
           push: true
           tags: ${{ env.IMAGE_NAME }}
 
-      - name: SSH Deploy Consumer.Email
+      - name: SSH Deploy Consumer.Notificacao
         uses: appleboy/ssh-action@v0.1.10
         with:
           host: ${{ secrets.VPS_DEV_HOST }}
@@ -63,8 +63,8 @@ jobs:
 
             echo "📦 Parando container antigo"
             cd ./APIs
-            docker compose stop email-consumer-dev || true
-            docker compose rm -f email-consumer-dev || true
+            docker compose stop notificacao-consumer-dev || true
+            docker compose rm -f notificacao-consumer-dev || true
 
             echo "📥 Removendo imagem antiga localmente"
             docker rmi "$IMAGE_NAME" || true
@@ -75,13 +75,13 @@ jobs:
             docker pull "$IMAGE_NAME"
 
             echo "🚀 Subindo container com nova imagem"
-            docker compose up -d email-consumer-dev
+            docker compose up -d notificacao-consumer-dev
           debug: true
 
   deploy-localizacao:
     if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main'
     concurrency:
-      group: ${{ github.repository }}-deploy-email
+      group: ${{ github.repository }}-deploy-consumer
       cancel-in-progress: false
     runs-on: ubuntu-latest
 
