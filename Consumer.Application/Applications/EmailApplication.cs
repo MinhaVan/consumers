@@ -90,7 +90,12 @@ public class EmailApplication(
 
     private async Task SendEmailAsync(List<string> destinos, string titulo, string mensagemHtml)
     {
-        var apiKey = generalSetting.SendGridKey;
+        var apiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY");
+
+#if DEBUG
+        apiKey = generalSetting.SendGridKey;
+#endif
+
         if (string.IsNullOrEmpty(apiKey))
             throw new Exception("API key do SendGrid não configurada no ambiente");
 
