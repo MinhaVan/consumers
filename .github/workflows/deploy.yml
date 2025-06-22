@@ -146,6 +146,6 @@ jobs:
             docker pull "$IMAGE_NAME"
 
             echo "🚀 Subindo container com nova imagem"
-            docker compose up -d localizacao-consumer-dev
+            docker compose --env-file .env up -d localizacao-consumer-dev
 
           debug: true
