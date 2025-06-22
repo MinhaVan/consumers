@@ -42,6 +42,7 @@ internal class Program
                 services.AddScoped<IValidator<EnviarLocalizacaoWebSocketRequest>, EnviarLocalizacaoWebSocketRequestValidator>();
                 services.AddScoped<ILocalizacaoApplication, LocalizacaoApplication>();
                 services.AddScoped<ILocalizacaoRepository, LocalizacaoRepository>();
+                services.AddHttpClient();
 
                 services.AddScoped<IQueueMessageHandler<EnviarLocalizacaoWebSocketRequest>, LocalizacaoQueueHandler>();
                 services.AddHostedService(sp =>

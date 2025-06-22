@@ -50,8 +50,9 @@ internal class Program
                 services.AddScoped<INotificacaoRepository, NotificacaoRepository>();
                 services.AddScoped<IWhatsappRepository, WhatsappRepository>();
                 services.AddScoped<IAuthRepository, AuthRepository>();
+                services.AddHttpClient();
 
-                services.AddSingleton<IQueueMessageHandler<NotificacaoRequest>, NotificacaoQueueHandler>();
+                services.AddScoped<IQueueMessageHandler<NotificacaoRequest>, NotificacaoQueueHandler>();
                 services.AddHostedService(sp =>
                     new GenericQueueConsumer<NotificacaoRequest>(
                         sp.GetRequiredService<ILogger<GenericQueueConsumer<NotificacaoRequest>>>(),

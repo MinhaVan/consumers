@@ -85,13 +85,13 @@ public class GenericQueueConsumer<T> : BackgroundService
                 else
                 {
                     _logger.LogError($"Erro lógico: {JsonSerializer.Serialize(result)}");
-                    _channel.RetryMessage(ea, _generalSetting, _logger, _deadQueueName, _retryQueueName);
+                    _channel.RetryMessage<T>(ea, _generalSetting, _logger, _deadQueueName, _retryQueueName);
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erro no processamento da fila");
-                _channel.RetryMessage(ea, _generalSetting, _logger, _deadQueueName, _retryQueueName);
+                _channel.RetryMessage<T>(ea, _generalSetting, _logger, _deadQueueName, _retryQueueName);
             }
         };
 
